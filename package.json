@@ -1,0 +1,27 @@
+{
+  "name": "project-delta",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RudraKumarSharma/Project-Delta.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RudraKumarSharma/Project-Delta/issues"
+  },
+  "homepage": "https://github.com/RudraKumarSharma/Project-Delta#readme",
+  "dependencies": {
+    "@inquirer/input": "^4.2.0",
+    "@inquirer/prompts": "^7.6.0",
+    "inquirer": "^12.7.0",
+    "keypress": "^0.2.1",
+    "spinner": "^0.3.4"
+  }
+}
