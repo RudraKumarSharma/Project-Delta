@@ -1,114 +1,145 @@
 #!usr/bin/env node
 import inquirer from 'inquirer';
+import axios from 'axios';
+import fs from 'fs';
 import keypress from 'keypress';
-import { select, Separator, input } from '@inquirer/prompts';
+import { select, Separator, input, password } from '@inquirer/prompts';
 
 
+function exit() { };
+
+const url = "http://localhost:3000";
 async function parentScreen() {
-    console.clear();
-    console.log('┌──────────────────────────────────────────┐');
-    console.log('│                                          │');
-    console.log('│            Welcome to #track             │');
-    console.log('│                                          │');
-    console.log('└──────────────────────────────────────────┘');
+    try {
+
+        console.clear();
+        console.log('┌──────────────────────────────────────────┐');
+        console.log('│                                          │');
+        console.log('│            Welcome to #track             │');
+        console.log('│                                          │');
+        console.log('└──────────────────────────────────────────┘');
 
 
 
-    const answer = await select({
-        message: 'Please log in to view your progress.',
-        choices: [
-            {
-                name: 'login',
-                value: async () => await loginScreen(), // we will call login function
-                description: 'Select to Login',
-            },
-            {
-                name: 'Sign up',
-                value: async () => await signUpScreen(), // signup function call
-                description: 'Select to signup for new users',
-            },
-            {
-                name: 'Exit',
-                value: 'Exit',
-                description: 'Select to Exit',
-            },
-        ],
-    });
+        const answer = await select({
+            message: 'Please log in to view your progress.',
+            choices: [
+                {
+                    name: 'login',
+                    value: async () => await loginScreen(), // we will call login function
+                    description: 'Select to Login',
+                },
+                {
+                    name: 'Sign up',
+                    value: async () => await signUpScreen(), // signup function call
+                    description: 'Select to signup for new users',
+                },
+                {
+                    name: 'Exit',
+                    value: async () => exit(),
+                    description: 'Select to Exit',
+                },
+            ],
+        });
 
-    if (typeof answer === 'function') {
         await answer();
+
+    }
+    catch (err) {
+        console.log("an error occured in parent function : ", err);
     }
 }
 
 parentScreen();
 
 async function loginScreen() {
-    console.clear();
-    console.log('Please enter your account details.');
-    console.log('');
+    try {
+        console.clear();
+        console.log('Please enter your account details.');
+        console.log('');
 
-    const username = await input({ message: 'Username: ',  required: true  });
-    if (username != '') {
+        const username = await input({ message: 'Username: ', required: true });
         const password = await input({ message: 'Password: ', required: true });
-    }
 
-    console.log('');
-    console.log('Authenticating with the server...');
+        const body = {
+            username,
+            password
+        };
+        const response = (await axios.post(`${url}/auth/login`, body)).data;
+        console.log('');
+        console.log('Authenticating with the server...');
+        const token = JSON.stringify(response);
+        fs.writeFileSync("config.json", token);
+        console.log('Login Successful');
 
-    if (false) {
-        console.log('Login Sucessful');
     }
-    else {
-        loginScreenError();
+    catch (err) {
+        loginScreenError(err);
     }
-
 }
-
-async function loginScreenError() {
+async function loginScreenError(err) {
     console.clear();
+    try {
 
-    const answer = await select({
-        message: 'Incorrect username or password. Please try again.',
-        choices: [
-            {
-                name: 'Try Again',
-                value: async () => await loginScreen(), // we will call login function
-                description: 'Select to login again',
-            },
-            {
-                name: 'Exit',
-                value: 'Exit',
-                description: 'Select to Exit',
-            },
-        ],
-    });
+        const answer = await select({
+            message: `Incorrect username or password. Please try again : ${err}`,
+            choices: [
+                {
+                    name: 'Try Again',
+                    value: async () => await loginScreen(), // we will call login function
+                    description: 'Select to login again',
+                },
+                {
+                    name: 'Exit',
+                    value: async () => exit(),
+                    description: 'Select to Exit',
+                },
+            ],
+        });
 
-    if (typeof answer === 'function') {
         await answer();
+    }
+    catch (err) {
+        console.log(err);
     }
 
 }
 
 async function signUpScreen() {
-    console.clear();
-    const email = await input({message: 'Email: ', required: true});
-    const password = await input({message: 'password: ', required: true});
-    const leetcodeSessionToken = await input({message: 'leetcode-session-token: ', required: false});
-    const leetcodeId = await input({message: 'leetcodeId: ', required: false});
-    const emacodeforcesId = await input({message: 'codeforces-ID: ', required: false});
-    const gfgId = await input({message: 'GFG-ID: ', required: false});
+    try {
 
-    console.log('');
-    console.log('Creating your account...');
+        console.clear();
+        const email = await input({ message: "Email : ", required: true })
+        const username = await input({ message: 'username: ', required: true });
+        const password = await input({ message: 'password: ', required: true });
+        const leetcodeSessionToken = await input({ message: 'leetcode-session-token: ', required: false });
+        const leetcodeId = await input({ message: 'leetcodeId: ', required: false });
+        const codeforcesId = await input({ message: 'codeforces-ID: ', required: false });
+        const gfgId = await input({ message: 'GFG-ID: ', required: false });
+        const gfgToken = await input({ message: "GFG Token : ", required: false })
 
-    // if(signUpErrorScreenA()) {
-        
-    // }
-    if(true) { // if there is any error in the backend server
-        signUpErrorScreenB(); 
-    }
-    else {
+        console.log('');
+        console.log('Creating your account...');
+
+        const body = {
+            username,
+            password,
+            leetcodeSessionToken,
+            leetcodeId,
+            codeforcesId,
+            gfgId,
+            email,
+            gfgToken
+        };
+        const response = (await axios.post(`${url}/auth/signup`, body)).data;
+        const token = JSON.stringify(response);
+        fs.writeFileSync("config.json", token);
         console.log('Account created successfully!');
+    }
+    catch (err) {
+        console.log(err);
+
+        signUpErrorScreenB(err?.err);
     }
 
 }
@@ -130,14 +161,12 @@ async function signUpErrorScreenB(error) {
             },
             {
                 name: 'Exit',
-                value: 'Exit',
+                value: async () => exit(),
                 description: 'Select to Exit',
             },
         ],
     });
 
-    if (typeof answer === 'function') {
-        await answer();
-    }
+    await answer();
 }
 
