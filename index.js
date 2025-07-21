@@ -71,7 +71,7 @@ async function loginScreen() {
         const token = JSON.stringify(response);
         fs.writeFileSync("config.json", token);
         console.log('Login Successful');
-
+        homePageScreen();
     }
     catch (err) {
         loginScreenError(err);
@@ -98,6 +98,7 @@ async function loginScreenError(err) {
         });
 
         await answer();
+        
     }
     catch (err) {
         console.log(err);
@@ -182,27 +183,26 @@ async function homePageScreen() {
         choices: [
             {
                 name: 'View Recent Submissions',
-                Value: async () => recentSubmissionsScreen(),
+                value: async () => await recentSubmissionsScreen(),
                 description: 'Select to see the recent submissions across different platforms',
             },
             {
                 name: 'View Profile Status',
-                Value: async () => profileStatusScreen(),
+                value: async () => await profileStatusScreen(),
                 description: 'Select to see your profile status',
             },
             {
                 name: 'Manage Account',
-                Value: async () => manageAccountScreen(),
+                value: async () => await manageAccountScreen(),
                 description: 'Select to manage your account',
             },
             {
                 name: 'Exit',
-                Value: async () => exit(),
+                value: async () => await exit(),
                 description: 'Select to Exit',
             }
         ]
     })
-
     await answer();
 
 }
