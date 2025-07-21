@@ -170,3 +170,40 @@ async function signUpErrorScreenB(error) {
     await answer();
 }
 
+async function homePageScreen() {
+    console.clear();
+    const data = fs.readFileSync('./config.json', 'utf-8');
+    const config = JSON.parse(data);
+    
+    console.log(`Welcome, ${config.username}`);
+    
+    const answer = await select({
+        message: 'What would you like to do? \n',
+        choices: [
+            {
+                name: 'View Recent Submissions',
+                Value: async () => recentSubmissionsScreen(),
+                description: 'Select to see the recent submissions across different platforms',
+            },
+            {
+                name: 'View Profile Status',
+                Value: async () => profileStatusScreen(),
+                description: 'Select to see your profile status',
+            },
+            {
+                name: 'Manage Account',
+                Value: async () => manageAccountScreen(),
+                description: 'Select to manage your account',
+            },
+            {
+                name: 'Exit',
+                Value: async () => exit(),
+                description: 'Select to Exit',
+            }
+        ]
+    })
+
+    await answer();
+
+}
+
