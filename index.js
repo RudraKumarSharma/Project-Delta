@@ -4,9 +4,11 @@ import axios from 'axios';
 import fs from 'fs';
 import keypress from 'keypress';
 import { select, Separator, input, password } from '@inquirer/prompts';
+import Table from "cli-table3";
 
-
-function exit() { };
+function exit() {
+    console.clear();
+};
 
 const url = "http://localhost:3000";
 async function parentScreen() {
@@ -51,6 +53,7 @@ async function parentScreen() {
 }
 
 parentScreen();
+// recentSubmissionsScreen();
 
 async function loginScreen() {
     try {
@@ -71,12 +74,24 @@ async function loginScreen() {
         const token = JSON.stringify(response);
         fs.writeFileSync("config.json", token);
         console.log('Login Successful');
-        homePageScreen();
+        console.log("\n(Press 'enter' to continue.)");
+
+        keypress(process.stdin);
+        process.stdin.on("keypress", function (ch, key) {
+            // console.log(key);
+            if (key && key.name == "return") {
+                homePageScreen();
+            }
+        });
+
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
     }
     catch (err) {
         loginScreenError(err);
     }
 }
+
 async function loginScreenError(err) {
     console.clear();
     try {
@@ -98,7 +113,7 @@ async function loginScreenError(err) {
         });
 
         await answer();
-        
+
     }
     catch (err) {
         console.log(err);
@@ -175,9 +190,9 @@ async function homePageScreen() {
     console.clear();
     const data = fs.readFileSync('./config.json', 'utf-8');
     const config = JSON.parse(data);
-    
+
     console.log(`Welcome, ${config.username}`);
-    
+
     const answer = await select({
         message: 'What would you like to do? \n',
         choices: [
@@ -204,6 +219,65 @@ async function homePageScreen() {
         ]
     })
     await answer();
-
 }
 
+async function recentSubmissionsScreen() {
+
+    const NO_OF_SUBMISSIONS_PER_PAGE = 5;
+
+    const submissions = [
+        ["Problem 1", "Platform A", "Easy", "2025-07-10 14:30"],
+        ["Problem 2", "Platform B", "Easy", "2025-07-09 19:15"],
+        ["Problem 3", "Platform A", "Medium", "2025-07-09 11:20"],
+        ["Problem 4", "Platform C", "Hard", "2025-07-08 21:05"],
+        ["Problem 5", "Platform A", "Medium", "2025-07-08 10:10"],
+        ["Problem 6", "Platform B", "Hard", "2025-07-07 09:05"],
+        ["Problem 7", "Platform C", "Easy", "2025-07-06 22:30"],
+    ];
+
+    const pageSize = NO_OF_SUBMISSIONS_PER_PAGE;
+    let currentPage = 0;
+    const totalPages = Math.ceil(submissions.length / pageSize);
+
+    function renderPage() {
+        console.clear();
+        console.log("Fetching your latest submissions...");
+        console.log(
+            `Viewing: Page ${currentPage + 1} of ${totalPages} (Use ←/→ to navigate pages)`
+        );
+
+        const table = new Table({
+            head: ["Problem", "Platform", "Difficulty", "Submitted On"],
+            colWidths: [15, 15, 15, 25],
+        });
+
+        const start = currentPage * pageSize;
+        const end = start + pageSize;
+        const pageData = submissions.slice(start, end);
+
+        pageData.forEach((row) => table.push(row));
+        console.log(table.toString());
+        console.log("\n(Press 'esc' to return to the main menu...)");
+
+        keypress(process.stdin);
+
+        process.stdin.on("keypress", function (ch, key) {
+            if (key && key.name == "escape") {
+                process.stdin.pause();
+            } else if (key && key.name == "left") {
+                if (currentPage > 0) {
+                    renderPage(--currentPage);
+                }
+            } else if (key && key.name == "right") {
+                if (currentPage < totalPages - 1) {
+                    renderPage(++currentPage);
+                }
+            }
+        });
+
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+    }
+
+    renderPage(currentPage);
+}
