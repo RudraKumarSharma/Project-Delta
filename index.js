@@ -150,7 +150,6 @@ async function loginScreenError(err) {
 
 async function signUpScreen() {
     try {
-
         console.clear();
         const email = await input({ message: "Email : ", required: true })
         const username = await input({ message: 'username: ', required: true });
@@ -177,12 +176,18 @@ async function signUpScreen() {
             gfgToken
         };
         console.log(body);
+
         const response = (await axios.post(`${url}/auth/signup`, body)).data;
-        const token = JSON.stringify(response);
-        fs.writeFileSync("config.json", {
-            jwt_token: token.jwt_token
+        // console.log(response);
+
+        const token = JSON.stringify({
+          jwt_token: response.jwt_token,
         });
+
+        fs.writeFileSync("config.json", token);
         console.log('Account created successfully!');
+
+        homePageScreen();
     }
     catch (err) {
         console.log(err);
@@ -197,7 +202,7 @@ async function signUpScreen() {
 // }
 
 async function signUpErrorScreenB(error) {
-    console.clear();
+
 
     const answer = await select({
         message: `An error occurred while creating your account: ${error}`,
@@ -274,23 +279,11 @@ async function recentSubmissionsScreen() {
         ];
 
 
-
-
-        // const leetCodeData = (await axios(`${url}/leetcode/recents`, {
-        //     headers: {
-        //         'Authorization': `Bearer ${userData.jwt_token}`
-        //     }
-        // })).data;
-        // const cfData = (await axios(`${url}/codeforces/recents` ,{ 
-        //     headers : {
-        //         'Authorization' : `Bearer ${userData.jwt_token}`
-        //     }
-        // })).data;
         const pageSize = NO_OF_SUBMISSIONS_PER_PAGE;
-        let currentPage = 0;
+        let currentPage = 0; // page no
         // const totalPages = Math.ceil(submissions.length / pageSize);
-        let memo = {};
-        let prevData = [];
+        let memo = {}; // cache
+        let prevData = []; // to give in req to check already sent data
         async function renderPage(currentPage) {
             const spinner = createSpinner('Loading Recent submissions').start();
             const table = new Table({
@@ -308,13 +301,23 @@ async function recentSubmissionsScreen() {
                         'Authorization': `Bearer ${userData.jwt_token}`
                     }
                 })).data;
-                memo[currentPage] = lcData;
                 prevData = [...prevData, ...lcData];
+                
+                const cfData = (await axios.get(`${url}/codeforces/recents?limit=5&offset=${pageSize * (currentPage)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${userData.jwt_token}`
+                    }
+                })).data;
+                
+                let total = [...lcData, ...cfData];
+                total.sort((a, b) => b.timestamp - a.timestamp);
+
+                memo[currentPage] = total;
             }
+
+
             const pageData = memo[currentPage];
             pageData.forEach((row) => table.push([row.title, row.platform, row.difficulty, row.timestamp]));
-
-
 
             console.log("\n(Press 'esc' to return to the main menu...)");
 
