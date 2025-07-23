@@ -5,12 +5,32 @@ import fs from 'fs';
 import keypress from 'keypress';
 import { select, Separator, input, password } from '@inquirer/prompts';
 import Table from "cli-table3";
-
+import cliSpinners from 'cli-spinners';
+import { createSpinner } from 'nanospinner';
+import { partialDeepStrictEqual } from 'assert';
 function exit() {
     console.clear();
 };
 
+
+
+
 const url = "http://localhost:3000";
+
+if (fs.readFileSync("config.json").length!=0) {
+    let token = JSON.parse(fs.readFileSync("config.json"));
+
+    axios(`${url}/auth/check-auth`,{
+        headers : {
+            'Authorization' : `Bearer ${token.jwt_token}`
+        }
+    }).then(async () => {
+        await homePageScreen();
+    }).catch(async () => await parentScreen());
+}
+
+
+
 async function parentScreen() {
     try {
 
@@ -69,36 +89,42 @@ async function loginScreen() {
             password
         };
         const response = (await axios.post(`${url}/auth/login`, body)).data;
+        console.log(response);
         console.log('');
-        console.log('Authenticating with the server...');
-        const token = JSON.stringify(response);
-        fs.writeFileSync("config.json", token);
+        const token = JSON.stringify({
+            jwt_token: response.jwt_token
+        });
 
+        fs.writeFileSync("config.json", token);
+        console.log('Authenticating with the server...');
         console.log('Login Successful');
         console.log("\n(Press 'enter' to continue.)");
 
         keypress(process.stdin);
-          process.stdin.on("keypress", function (ch, key) {
+        process.stdin.on("keypress", function (ch, key) {
             // console.log(key);
             if (key && key.name == "return") {
-              homePageScreen();
+                homePageScreen();
             }
-          });
-        
-          process.stdin.setRawMode(true);
-          process.stdin.resume();
+        });
+
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
     }
     catch (err) {
+        if (err.response.status == 401) {
+            loginScreen("")
+        }
         loginScreenError(err);
     }
 }
 
 async function loginScreenError(err) {
-    console.clear();
+    // console.clear();
     try {
 
         const answer = await select({
-            message: `Incorrect username or password. Please try again : ${err}`,
+            message: `${err}`,
             choices: [
                 {
                     name: 'Try Again',
@@ -114,6 +140,7 @@ async function loginScreenError(err) {
         });
 
         await answer();
+
     }
     catch (err) {
         console.log(err);
@@ -128,8 +155,10 @@ async function signUpScreen() {
         const email = await input({ message: "Email : ", required: true })
         const username = await input({ message: 'username: ', required: true });
         const password = await input({ message: 'password: ', required: true });
-        const leetcodeSessionToken = await input({ message: 'leetcode-session-token: ', required: false });
         const leetcodeId = await input({ message: 'leetcodeId: ', required: false });
+        console.log()
+        const leetcodeSessionToken = await input({ message: 'leetcode-session-token: ', required: false });
+
         const codeforcesId = await input({ message: 'codeforces-ID: ', required: false });
         const gfgId = await input({ message: 'GFG-ID: ', required: false });
         const gfgToken = await input({ message: "GFG Token : ", required: false })
@@ -147,9 +176,12 @@ async function signUpScreen() {
             email,
             gfgToken
         };
+        console.log(body);
         const response = (await axios.post(`${url}/auth/signup`, body)).data;
         const token = JSON.stringify(response);
-        fs.writeFileSync("config.json", token);
+        fs.writeFileSync("config.json", {
+            jwt_token: token.jwt_token
+        });
         console.log('Account created successfully!');
     }
     catch (err) {
@@ -187,98 +219,139 @@ async function signUpErrorScreenB(error) {
 }
 
 async function homePageScreen() {
+
     console.clear();
     const data = fs.readFileSync('./config.json', 'utf-8');
     const config = JSON.parse(data);
-    
+
     console.log(`Welcome, ${config.username}`);
-    
+
     const answer = await select({
         message: 'What would you like to do? \n',
         choices: [
             {
                 name: 'View Recent Submissions',
-                Value: async () => recentSubmissionsScreen(),
+                value: async () => await recentSubmissionsScreen(),
                 description: 'Select to see the recent submissions across different platforms',
             },
             {
                 name: 'View Profile Status',
-                Value: async () => profileStatusScreen(),
+                value: async () => await profileStatusScreen(),
                 description: 'Select to see your profile status',
             },
             {
                 name: 'Manage Account',
-                Value: async () => manageAccountScreen(),
+                value: async () => await manageAccountScreen(),
                 description: 'Select to manage your account',
             },
             {
                 name: 'Exit',
-                Value: async () => exit(),
+                value: async () => await exit(),
                 description: 'Select to Exit',
             }
         ]
     })
-
     await answer();
 }
 
 async function recentSubmissionsScreen() {
-    
-    const NO_OF_SUBMISSIONS_PER_PAGE = 5;
+    try {
 
-    const submissions = [
-    ["Problem 1", "Platform A", "Easy", "2025-07-10 14:30"],
-    ["Problem 2", "Platform B", "Easy", "2025-07-09 19:15"],
-    ["Problem 3", "Platform A", "Medium", "2025-07-09 11:20"],
-    ["Problem 4", "Platform C", "Hard", "2025-07-08 21:05"],
-    ["Problem 5", "Platform A", "Medium", "2025-07-08 10:10"],
-    ["Problem 6", "Platform B", "Hard", "2025-07-07 09:05"],
-    ["Problem 7", "Platform C", "Easy", "2025-07-06 22:30"],
-    ];
+        const userData = JSON.parse(fs.readFileSync("config.json"));
 
-    const pageSize = NO_OF_SUBMISSIONS_PER_PAGE;
-    let currentPage = 0;
-    const totalPages = Math.ceil(submissions.length / pageSize);
 
-    function renderPage() {
-    console.clear();
-    console.log("Fetching your latest submissions...");
-    console.log(
-    `Viewing: Page ${currentPage + 1} of ${totalPages} (Use ←/→ to navigate pages)`
-    );
+        console.clear();
+        const NO_OF_SUBMISSIONS_PER_PAGE = 5;
 
-    const table = new Table({
-    head: ["Problem", "Platform", "Difficulty", "Submitted On"],
-    colWidths: [15, 15, 15, 25],
-    });
+        const submissions = [
+            ["Problem 1", "Platform A", "Easy", "2025-07-10 14:30"],
+            ["Problem 2", "Platform B", "Easy", "2025-07-09 19:15"],
+            ["Problem 3", "Platform A", "Medium", "2025-07-09 11:20"],
+            ["Problem 4", "Platform C", "Hard", "2025-07-08 21:05"],
+            ["Problem 5", "Platform A", "Medium", "2025-07-08 10:10"],
+            ["Problem 6", "Platform B", "Hard", "2025-07-07 09:05"],
+            ["Problem 7", "Platform C", "Easy", "2025-07-06 22:30"],
+        ];
 
-    const start = currentPage * pageSize;
-    const end = start + pageSize;
-    const pageData = submissions.slice(start, end);
 
-    pageData.forEach((row) => table.push(row));
-    console.log(table.toString());
-    console.log("\n(Press 'esc' to return to the main menu...)");
 
-    keypress(process.stdin);
 
-    process.stdin.on("keypress", function (ch, key) {
-    if (key && key.name == "escape") {
-        process.stdin.pause();
-    } else if (key && key.name == "left") {
-        if (currentPage > 0) {
-        renderPage(--currentPage);
+        // const leetCodeData = (await axios(`${url}/leetcode/recents`, {
+        //     headers: {
+        //         'Authorization': `Bearer ${userData.jwt_token}`
+        //     }
+        // })).data;
+        // const cfData = (await axios(`${url}/codeforces/recents` ,{ 
+        //     headers : {
+        //         'Authorization' : `Bearer ${userData.jwt_token}`
+        //     }
+        // })).data;
+        const pageSize = NO_OF_SUBMISSIONS_PER_PAGE;
+        let currentPage = 0;
+        // const totalPages = Math.ceil(submissions.length / pageSize);
+        let memo = {};
+        let prevData = [];
+        async function renderPage(currentPage) {
+            const spinner = createSpinner('Loading Recent submissions').start();
+            const table = new Table({
+                head: ["Problem", "Platform", "Difficulty", "Submitted On"],
+                colWidths: [60, 15, 15, 25],
+            });
+            console.clear();
+            console.log("Fetching your latest submissions...");
+            console.log(
+                `Viewing: Page ${currentPage + 1} of - (Use ←/→ to navigate pages)`
+            );
+            if (!memo[currentPage]) {
+                const lcData = (await axios.post(`${url}/leetcode/recents?limit=5&offset=${pageSize * (currentPage)}`, { prevData }, {
+                    headers: {
+                        'Authorization': `Bearer ${userData.jwt_token}`
+                    }
+                })).data;
+                memo[currentPage] = lcData;
+                prevData = [...prevData, ...lcData];
+            }
+            const pageData = memo[currentPage];
+            pageData.forEach((row) => table.push([row.title, row.platform, row.difficulty, row.timestamp]));
+
+
+
+            console.log("\n(Press 'esc' to return to the main menu...)");
+
+            console.log(table.toString());
+            spinner.success({text:"Recent Submissions Loaded",update:true});
         }
-    } else if (key && key.name == "right") {
-        if (currentPage < totalPages - 1) {
-        renderPage(++currentPage);
-        }
-    }
-    });
 
-    process.stdin.setRawMode(true);
-    process.stdin.resume();
+        await renderPage(currentPage);
+
+        process.stdin.on("keypress", function (ch, key) {
+            if (key && key.name == "escape") {
+                homePageScreen();
+            } else if (key && key.name == "left") {
+                if (currentPage > 0) {
+                    renderPage(--currentPage);
+                }
+            } else if (key && key.name == "right") {
+                renderPage(++currentPage);
+            }
+        });
+
+        // leetCodeData.forEach(item => {
+        //     table.push([item.title, item.platform, item.difficulty, item.timestamp]);
+        // })
+        // cfData.forEach(item => {
+        //     table.push([item.title,item.platform,item.difficulty,item.timestamp]);
+        // });
+        keypress(process.stdin);
+
+
+
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+    }
+    catch (err) {
+        console.log(err);
     }
 
-    renderPage(currentPage);
+
 }
