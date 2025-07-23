@@ -7,7 +7,6 @@ import { select, Separator, input, password } from '@inquirer/prompts';
 import Table from "cli-table3";
 import cliSpinners from 'cli-spinners';
 import { createSpinner } from 'nanospinner';
-import { partialDeepStrictEqual } from 'assert';
 function exit() {
     console.clear();
 };
@@ -16,18 +15,22 @@ function exit() {
 
 
 const url = "http://localhost:3000";
+const checkLoginSession() {
 
-if (fs.readFileSync("config.json").length!=0) {
-    let token = JSON.parse(fs.readFileSync("config.json"));
-
-    axios(`${url}/auth/check-auth`,{
-        headers : {
-            'Authorization' : `Bearer ${token.jwt_token}`
-        }
-    }).then(async () => {
-        await homePageScreen();
-    }).catch(async () => await parentScreen());
+    if (fs.readFileSync("config.json").length!=0) {
+        let token = JSON.parse(fs.readFileSync("config.json"));
+        
+        axios(`${url}/auth/check-auth`,{
+            headers : {
+                'Authorization' : `Bearer ${token.jwt_token}`
+            }
+        }).then(async () => {
+            await homePageScreen();
+        }).catch(async () => await parentScreen());
+    }
 }
+
+checkLoginSession();
 
 
 
@@ -48,12 +51,12 @@ async function parentScreen() {
             choices: [
                 {
                     name: 'login',
-                    value: async () => await loginScreen(), // we will call login function
+                    value: async () => loginScreen(), // we will call login function
                     description: 'Select to Login',
                 },
                 {
                     name: 'Sign up',
-                    value: async () => await signUpScreen(), // signup function call
+                    value: async () => signUpScreen(), // signup function call
                     description: 'Select to signup for new users',
                 },
                 {
@@ -73,7 +76,6 @@ async function parentScreen() {
 }
 
 parentScreen();
-// recentSubmissionsScreen();
 
 async function loginScreen() {
     try {
@@ -102,7 +104,6 @@ async function loginScreen() {
 
         keypress(process.stdin);
         process.stdin.on("keypress", function (ch, key) {
-            // console.log(key);
             if (key && key.name == "return") {
                 homePageScreen();
             }
@@ -112,15 +113,13 @@ async function loginScreen() {
         process.stdin.resume();
     }
     catch (err) {
-        if (err.response.status == 401) {
-            loginScreen("")
-        }
+        
         loginScreenError(err);
     }
 }
 
 async function loginScreenError(err) {
-    // console.clear();
+    console.clear();
     try {
 
         const answer = await select({
@@ -150,7 +149,6 @@ async function loginScreenError(err) {
 
 async function signUpScreen() {
     try {
-
         console.clear();
         const email = await input({ message: "Email : ", required: true })
         const username = await input({ message: 'username: ', required: true });
@@ -186,18 +184,12 @@ async function signUpScreen() {
     }
     catch (err) {
         console.log(err);
-
         signUpErrorScreenB(err?.err);
     }
 
 }
-
-// async function signUpErrorScreenA() {
-
-// }
-
 async function signUpErrorScreenB(error) {
-    console.clear();
+    // console.clear();
 
     const answer = await select({
         message: `An error occurred while creating your account: ${error}`,
@@ -289,7 +281,7 @@ async function recentSubmissionsScreen() {
         const pageSize = NO_OF_SUBMISSIONS_PER_PAGE;
         let currentPage = 0;
         // const totalPages = Math.ceil(submissions.length / pageSize);
-        let memo = {};
+        let cache = {};
         let prevData = [];
         async function renderPage(currentPage) {
             const spinner = createSpinner('Loading Recent submissions').start();
@@ -302,16 +294,16 @@ async function recentSubmissionsScreen() {
             console.log(
                 `Viewing: Page ${currentPage + 1} of - (Use ←/→ to navigate pages)`
             );
-            if (!memo[currentPage]) {
+            if (!cache[currentPage]) {
                 const lcData = (await axios.post(`${url}/leetcode/recents?limit=5&offset=${pageSize * (currentPage)}`, { prevData }, {
                     headers: {
                         'Authorization': `Bearer ${userData.jwt_token}`
                     }
                 })).data;
-                memo[currentPage] = lcData;
-                prevData = [...prevData, ...lcData];
+                cache[currentPage] = lcData;
+                prevData = [...prevData, ...lcData];   
             }
-            const pageData = memo[currentPage];
+            const pageData = cache[currentPage];
             pageData.forEach((row) => table.push([row.title, row.platform, row.difficulty, row.timestamp]));
 
 
@@ -336,12 +328,7 @@ async function recentSubmissionsScreen() {
             }
         });
 
-        // leetCodeData.forEach(item => {
-        //     table.push([item.title, item.platform, item.difficulty, item.timestamp]);
-        // })
-        // cfData.forEach(item => {
-        //     table.push([item.title,item.platform,item.difficulty,item.timestamp]);
-        // });
+       
         keypress(process.stdin);
 
 

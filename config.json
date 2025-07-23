@@ -1,1 +1,3 @@
-{"jwt_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJwYXJ0aDY3IiwiaWF0IjoxNzUzMjgxMDQ5LCJleHAiOjE3NTMyODgyNDl9.AKrKnoLFZUNvpk_bKjQTB4zBv2rhWTqX395qeitsmC0"}
+{
+  "jwt_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJzZCIsImlhdCI6MTc1MzI5MTI1MywiZXhwIjoxNzUzMjk4NDUzfQ.Xa5FtLah5IBOnyQB4arFq2JyXzmV5PREDqVjmtcHxgw"
+}
