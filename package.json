@@ -21,9 +21,11 @@
     "@inquirer/input": "^4.2.0",
     "@inquirer/prompts": "^7.6.0",
     "axios": "^1.10.0",
+    "cli-spinners": "^3.2.0",
     "cli-table3": "^0.6.5",
     "inquirer": "^12.7.0",
     "keypress": "^0.2.1",
+    "nanospinner": "^1.2.2",
     "spinner": "^0.3.4"
   }
 }
