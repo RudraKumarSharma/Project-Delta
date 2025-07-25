@@ -5,6 +5,7 @@ import fs from 'fs';
 import keypress from 'keypress';
 import { select, Separator, input, password } from '@inquirer/prompts';
 import Table from "cli-table3";
+import { stringify } from 'querystring';
 
 function exit() {
     console.clear();
@@ -198,22 +199,22 @@ async function homePageScreen() {
         choices: [
             {
                 name: 'View Recent Submissions',
-                Value: async () => recentSubmissionsScreen(),
+                value: async () => recentSubmissionsScreen(),
                 description: 'Select to see the recent submissions across different platforms',
             },
             {
                 name: 'View Profile Status',
-                Value: async () => profileStatusScreen(),
+                value: async () => profileStatusScreen(),
                 description: 'Select to see your profile status',
             },
             {
                 name: 'Manage Account',
-                Value: async () => manageAccountScreen(),
+                value: async () => manageAccountScreen(),
                 description: 'Select to manage your account',
             },
             {
                 name: 'Exit',
-                Value: async () => exit(),
+                value: async () => exit(),
                 description: 'Select to Exit',
             }
         ]
@@ -223,6 +224,7 @@ async function homePageScreen() {
 }
 
 async function recentSubmissionsScreen() {
+    console.clear();
     
     const NO_OF_SUBMISSIONS_PER_PAGE = 5;
 
@@ -264,7 +266,7 @@ async function recentSubmissionsScreen() {
 
     process.stdin.on("keypress", function (ch, key) {
     if (key && key.name == "escape") {
-        process.stdin.pause();
+        homePageScreen();
     } else if (key && key.name == "left") {
         if (currentPage > 0) {
         renderPage(--currentPage);
@@ -281,4 +283,68 @@ async function recentSubmissionsScreen() {
     }
 
     renderPage(currentPage);
+}
+
+async function manageAccountScreen() {
+    console.clear();
+
+    try{
+        const answer = await select({
+            message: 'Manage connected platforms',
+            choices: [
+                {
+                    name: 'Leetcode-Session-Token',
+                    value: async() => await leetcodeSessionTokenUpdateScreen(),
+                    description: 'goto->chrome->leetcode_profile->inspect->application->filter(LEETCODE-SESSION)',
+                },
+                {
+                    name: 'Leetcode-Id',
+                    value: async() => await leetcodeIDUpdateScreen(),
+                    description: 'Your leetcode username',
+                },
+                {
+                    name: 'Codeforces-Id\n',
+                    value: async() => await codeforcesIDUpdateScreen(),
+                    description: 'update codeforces username',
+                },
+                {
+                    name: 'Return to main-menu',
+                    value: async() => await homePageScreen(),
+                    description: 'press to go back to menu',
+                },
+            ]
+        });
+
+        keypress(process.stdin);
+
+        process.stdin.on("keypress", function (ch, key) {
+            if (key && key.name == "escape") {
+                homePageScreen();
+            }
+        });
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+
+        await answer();
+
+    }
+    catch(err){
+        console.log(err);
+    }
+
+    console.log('');
+    console.log('Updating your account...');
+    console.log('Account updated successfully!');
+}
+
+async function leetcodeSessionTokenUpdateScreen() {
+
+}
+
+async function leetcodeIDUpdateScreen() {
+
+}
+
+async function codeforcesIDUpdateScreen() {
+
 }
