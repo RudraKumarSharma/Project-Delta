@@ -1,0 +1,60 @@
+import { input } from "@inquirer/prompts";
+import signUpErrorScreenB from "./SignupError.js";
+import fs from 'fs';
+import axios from "axios";
+async function signUpScreen() {
+    try {
+        console.clear();
+        const email = await input({ message: "Email : ", required: true });
+        const username = await input({ message: "username: ", required: true });
+        const password = await input({ message: "password: ", required: true });
+        const leetcodeId = await input({
+            message: "leetcodeId: ",
+            required: false,
+        });
+        console.log();
+        const leetcodeSessionToken = await input({
+            message: "leetcode-session-token: ",
+            required: false,
+        });
+
+        const codeforcesId = await input({
+            message: "codeforces-ID: ",
+            required: false,
+        });
+        const gfgId = await input({ message: "GFG-ID: ", required: false });
+        const gfgToken = await input({ message: "GFG Token : ", required: false });
+
+        console.log("");
+        console.log("Creating your account...");
+
+        const body = {
+            username,
+            password,
+            leetcodeSessionToken,
+            leetcodeId,
+            codeforcesId,
+            gfgId,
+            email,
+            gfgToken,
+        };
+        console.log(body);
+
+        const response = (await axios.post(`${url}/auth/signup`, body)).data;
+
+        const token = JSON.stringify({
+            jwt_token: response.jwt_token,
+        });
+
+        fs.writeFileSync("config.json", token);
+        console.log("Account created successfully!");
+
+        homePageScreen();
+    } catch (err) {
+        console.log(err);
+        signUpErrorScreenB(err?.err);
+    }
+}
+
+
+export default signUpScreen;
