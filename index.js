@@ -7,6 +7,8 @@ import { select, Separator, input, password } from "@inquirer/prompts";
 import Table from "cli-table3";
 import cliSpinners from "cli-spinners";
 import { createSpinner } from "nanospinner";
+import { platform } from "os";
+const url = "http://localhost:3000";
 function exit() {
   console.clear();
 }
@@ -24,7 +26,39 @@ function timestampToDate(timestamp) {
 	return formatted;
 }
 
-const url = "http://localhost:3000";
+async function fetchStats(platform) {
+	const userData = JSON.parse(fs.readFileSync("config.json"));
+
+	if(platform === "codeforces") {
+		const data = (
+			await axios.get(
+				`${url}/codeforces/question-count`, {
+					headers: {
+						Authorization: `Bearer ${userData.jwt_token}`,
+					},
+				}
+			)
+		).data;
+
+		return data;
+	}
+
+	if(platform === "leetcode") {
+		const data = (
+			await axios.get(
+				`${url}/leetcode/question-count`, {
+					headers: {
+						Authorization: `Bearer ${userData.jwt_token}`,
+					},
+				}
+			)
+		).data;
+
+		return data;
+	}
+
+}
+
 async function checkLoginSession() {
   if (fs.readFileSync("config.json").length != 0) {
     let token = JSON.parse(fs.readFileSync("config.json"));
@@ -323,12 +357,10 @@ async function recentSubmissionsScreen() {
     const totalPages = Math.floor(total.length / pageSize);
     async function renderPage(currentPage) {
       spinner.success();
-      console.clear();
       const table = new Table({
         head: ["Problem", "Platform", "Difficulty", "Submitted On (GMT)"],
         colWidths: [60, 15, 15, 25],
       });
-      console.log("Fetching your latest submissions...");
       console.log(
         `Viewing: Page ${currentPage + 1} of ${totalPages} (Use ←/→ to navigate pages)`
       );
@@ -370,5 +402,96 @@ async function recentSubmissionsScreen() {
     process.stdin.resume();
   } catch (err) {
     console.log(err);
+  }
+}
+
+async function profileStatusScreen() {
+  try {
+    console.clear();
+
+		const spinner = createSpinner("Loading your profile stats").start();
+		let pages = [];
+		let currentPage = 0;
+
+		if(true) { // connected("leetcode")
+			let lcData = await fetchStats("leetcode");
+			pages.push({platform: "Leetcode", data: lcData});
+		}
+		if(true) { // connected("codeforces")
+			let cfData = await fetchStats("codeforces");
+			pages.push({ platform: "Codeforces", data: cfData });
+		}
+
+		let d = {
+			easy: 0,
+			medium: 0,
+			hard: 0,
+			total: 0,
+		};
+		for(let i = 0; i < pages.length; i++) {
+			d.easy += pages[i].data.easy;
+			d.medium += pages[i].data.medium;
+			d.hard += pages[i].data.hard;
+			d.total += pages[i].data.total;
+		}
+
+		pages.push({ platform: "Overall", data: d});
+
+		spinner.success();
+		console.clear();
+
+		async function renderPage(currentPage) {
+			console.clear();
+      console.log(
+        `Viewing: [${pages[currentPage].platform}] (Use ←/→ to change platform)`
+      );
+
+			const table = new Table({
+				head: ["Difficulty", "Count"],
+				colWidths: [15, 10],
+			});
+			
+      const pageData = pages[currentPage];
+      
+			table.push(["Easy",
+				pageData.data.easy
+			])
+			table.push(["Medium",
+				pageData.data.medium
+			])
+			table.push(["Hard",
+				pageData.data.hard
+			])
+			table.push([
+        "Total ",
+        pageData.data.easy + pageData.data.medium + pageData.data.hard,
+      ]);
+
+      console.log(table.toString());
+
+      console.log("\n(Press 'esc' to return to the main menu...)");
+    }
+		renderPage(currentPage)
+
+		keypress(process.stdin);
+
+    process.stdin.on("keypress", function (ch, key) {
+      if (key && key.name == "escape") {
+        homePageScreen();
+      } else if (key && key.name == "left") {
+				if (currentPage > 0) {
+          renderPage(--currentPage);
+        }
+			} else if (key && key.name == "right") {
+				if (currentPage + 1 <= pages.length - 1) {
+          renderPage(++currentPage);
+        }
+			}
+    });
+
+    process.stdin.setRawMode(true);
+    process.stdin.resume();
+  } catch (err) {
+    console.error("An error occurred in profileStatusScreen:", err);
   }
 }
