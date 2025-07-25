@@ -261,8 +261,8 @@ async function recentSubmissionsScreen() {
         const NO_OF_SUBMISSIONS_PER_PAGE = 5;
         const userData = JSON.parse(fs.readFileSync("config.json"));
         const spinner = createSpinner('Loading Recent submissions').start();
-        let offset = 0;
         let memo = {}; // cache
+        let offset = 0;
         let lcData = [];
         while (true) {
             const data = (await axios.post(`${url}/leetcode/recents?limit=5&offset=${offset}`, { lcData }, {
