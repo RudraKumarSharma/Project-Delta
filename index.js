@@ -292,7 +292,19 @@ async function recentSubmissionsScreen() {
       })
     ).data;
 
-    let total = [...lcData, ...cfData];
+
+    // gfg work --> 
+
+    let gfgData = (
+        await axios.get(`${url}/gfg/recents`, {
+          headers : {
+            Authorization : `Bearer ${userData.jwt_token}`
+          },
+        })
+      ).data;
+
+
+    let total = [...lcData, ...cfData, ...gfgData];
     total.sort((a, b) => b.timestamp - a.timestamp);
     let temp = [];
     total.forEach((element, i) => {
