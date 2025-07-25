@@ -15,18 +15,21 @@ function exit() {
 
 
 const url = "http://localhost:3000";
-const checkLoginSession() {
+async function checkLoginSession() {
 
-    if (fs.readFileSync("config.json").length!=0) {
+    if (fs.readFileSync("config.json").length != 0) {
         let token = JSON.parse(fs.readFileSync("config.json"));
-        
-        axios(`${url}/auth/check-auth`,{
-            headers : {
-                'Authorization' : `Bearer ${token.jwt_token}`
+
+        axios(`${url}/auth/check-auth`, {
+            headers: {
+                'Authorization': `Bearer ${token.jwt_token}`
             }
         }).then(async () => {
             await homePageScreen();
         }).catch(async () => await parentScreen());
+    }
+    else{
+        await parentScreen();
     }
 }
 
@@ -75,7 +78,6 @@ async function parentScreen() {
     }
 }
 
-parentScreen();
 
 async function loginScreen() {
     try {
@@ -113,7 +115,7 @@ async function loginScreen() {
         process.stdin.resume();
     }
     catch (err) {
-        
+
         loginScreenError(err);
     }
 }
@@ -175,12 +177,18 @@ async function signUpScreen() {
             gfgToken
         };
         console.log(body);
+
         const response = (await axios.post(`${url}/auth/signup`, body)).data;
-        const token = JSON.stringify(response);
-        fs.writeFileSync("config.json", {
-            jwt_token: token.jwt_token
+        // console.log(response);
+
+        const token = JSON.stringify({
+            jwt_token: response.jwt_token,
         });
+
+        fs.writeFileSync("config.json", token);
         console.log('Account created successfully!');
+
+        homePageScreen();
     }
     catch (err) {
         console.log(err);
@@ -249,69 +257,68 @@ async function homePageScreen() {
 async function recentSubmissionsScreen() {
     try {
 
-        const userData = JSON.parse(fs.readFileSync("config.json"));
-
-
         console.clear();
         const NO_OF_SUBMISSIONS_PER_PAGE = 5;
+        const userData = JSON.parse(fs.readFileSync("config.json"));
+        const spinner = createSpinner('Loading Recent submissions').start();
+        let offset = 0;
+        let memo = {}; // cache
+        let lcData = [];
+        while (true) {
+            const data = (await axios.post(`${url}/leetcode/recents?limit=5&offset=${offset}`, { lcData }, {
+                headers: {
+                    'Authorization': `Bearer ${userData.jwt_token}`
+                }
+            })).data;
+            if (data.length == 0) break;
 
-        const submissions = [
-            ["Problem 1", "Platform A", "Easy", "2025-07-10 14:30"],
-            ["Problem 2", "Platform B", "Easy", "2025-07-09 19:15"],
-            ["Problem 3", "Platform A", "Medium", "2025-07-09 11:20"],
-            ["Problem 4", "Platform C", "Hard", "2025-07-08 21:05"],
-            ["Problem 5", "Platform A", "Medium", "2025-07-08 10:10"],
-            ["Problem 6", "Platform B", "Hard", "2025-07-07 09:05"],
-            ["Problem 7", "Platform C", "Easy", "2025-07-06 22:30"],
-        ];
+
+            lcData = [...lcData, ...data];
+            offset += NO_OF_SUBMISSIONS_PER_PAGE;
+        }
+
+
+        
+        
+        let total = [...lcData];
+        total.sort((a, b) => b.timestamp - a.timestamp);
+        let temp = [];
+        total.forEach((element,i) => {
+            temp.push(total[i]);
+            if ((i+1)%NO_OF_SUBMISSIONS_PER_PAGE == 0) {
+                console.log(i);
+                memo[(i+1)/NO_OF_SUBMISSIONS_PER_PAGE] = temp;
+                temp = [];
+            }
+        });
+        memo[Object.keys(memo)[Object.keys(memo).length-1]] = temp;
+        
 
 
 
-
-        // const leetCodeData = (await axios(`${url}/leetcode/recents`, {
-        //     headers: {
-        //         'Authorization': `Bearer ${userData.jwt_token}`
-        //     }
-        // })).data;
-        // const cfData = (await axios(`${url}/codeforces/recents` ,{ 
-        //     headers : {
-        //         'Authorization' : `Bearer ${userData.jwt_token}`
-        //     }
-        // })).data;
         const pageSize = NO_OF_SUBMISSIONS_PER_PAGE;
-        let currentPage = 0;
-        // const totalPages = Math.ceil(submissions.length / pageSize);
-        let cache = {};
-        let prevData = [];
+        let currentPage = 0; // page no
+        
+        const totalPages = Math.floor(total.length / pageSize);
         async function renderPage(currentPage) {
-            const spinner = createSpinner('Loading Recent submissions').start();
+            spinner.success();
+            console.clear();
             const table = new Table({
                 head: ["Problem", "Platform", "Difficulty", "Submitted On"],
                 colWidths: [60, 15, 15, 25],
             });
-            console.clear();
             console.log("Fetching your latest submissions...");
             console.log(
-                `Viewing: Page ${currentPage + 1} of - (Use ←/→ to navigate pages)`
+                `Viewing: Page ${currentPage + 1} of ${totalPages} (Use ←/→ to navigate pages)`
             );
-            if (!cache[currentPage]) {
-                const lcData = (await axios.post(`${url}/leetcode/recents?limit=5&offset=${pageSize * (currentPage)}`, { prevData }, {
-                    headers: {
-                        'Authorization': `Bearer ${userData.jwt_token}`
-                    }
-                })).data;
-                cache[currentPage] = lcData;
-                prevData = [...prevData, ...lcData];   
-            }
-            const pageData = cache[currentPage];
-            pageData.forEach((row) => table.push([row.title, row.platform, row.difficulty, row.timestamp]));
 
 
+            const pageData = memo[currentPage+1];
+            pageData?.forEach((row) => table.push([row.title, row.platform, row.difficulty, row.timestamp]));
 
             console.log("\n(Press 'esc' to return to the main menu...)");
 
             console.log(table.toString());
-            spinner.success({text:"Recent Submissions Loaded",update:true});
         }
 
         await renderPage(currentPage);
@@ -324,11 +331,13 @@ async function recentSubmissionsScreen() {
                     renderPage(--currentPage);
                 }
             } else if (key && key.name == "right") {
-                renderPage(++currentPage);
+                if (currentPage+1 <= totalPages-1) {
+                    renderPage(++currentPage);
+                }
             }
         });
 
-       
+
         keypress(process.stdin);
 
 
