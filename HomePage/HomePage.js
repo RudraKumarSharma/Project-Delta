@@ -32,7 +32,7 @@ async function homePageScreen() {
             },
         ],
     });
-    await answer();
+   return  (await answer());
 }
 
 export default homePageScreen;
