@@ -6,6 +6,7 @@ import { createSpinner } from 'nanospinner';
 import { keyPress } from '../index.js';
 import homePageScreen from '../HomePage/HomePage.js';
 import { timestampToDate } from '../index.js';
+import recentSubError from './recentSubmissionsError.js';
 async function recentSubmissionsScreen() {
     try {
         console.clear();
@@ -24,7 +25,6 @@ async function recentSubmissionsScreen() {
             )
         ).data;
 
-
         let cfData = (
             await axios.get(`${url}/codeforces/recents`, {
                 headers: {
@@ -33,9 +33,6 @@ async function recentSubmissionsScreen() {
             })
         ).data;
 
-
-        // gfg work --> 
-
         let gfgData = (
             await axios.get(`${url}/gfg/recents`, {
                 headers: {
@@ -43,7 +40,6 @@ async function recentSubmissionsScreen() {
                 },
             })
         ).data;
-
 
         let total = [...lcData, ...cfData, ...gfgData];
         total.sort((a, b) => b.timestamp - a.timestamp);
@@ -93,7 +89,7 @@ async function recentSubmissionsScreen() {
         keyPress((ch, key) => {
 
             if (key && key.name == "escape") {
-                return homePageScreen();
+                return homePageScreen;
             } else if (key && key.name == "left") {
                 if (currentPage > 0) {
                     renderPage(--currentPage);
@@ -105,7 +101,7 @@ async function recentSubmissionsScreen() {
             }
         })
     } catch (err) {
-        console.log(err);
+        recentSubError("An unexpected error occurred while fetching submissions. Please try again later.");
     }
 }
 

@@ -53,8 +53,16 @@ async function signUpScreen() {
 
         homePageScreen();
     } catch (err) {
-        console.log(err);
-        signUpErrorScreenB(err?.err);
+        
+        if(err.status) {
+            if(err.status === 402) {
+                signUpErrorScreenB("User already exists");
+            } else if (err.status === 500) {
+                signUpErrorScreenB("Internal server error");
+            }
+        } else {
+            signUpErrorScreenB("An unexpected error occurred. Please try again later.");
+        }
     }
 }
 
