@@ -1,6 +1,5 @@
 import { createSpinner } from "nanospinner";
 import { keyPress } from "../index.js";
-import keypress from "keypress";
 import axios from 'axios';
 import homePageScreen from "../HomePage/HomePage.js";
 import Table from "cli-table3";
@@ -19,7 +18,6 @@ async function fetchStats(platform) {
 			)
 		).data;
 
-        console.log(data);
 		return data;
 	}
 
@@ -37,23 +35,28 @@ async function fetchStats(platform) {
 		return data;
 	}
 
+    if(platform === "gfg") {
+		const data = (
+			await axios.get(
+				`${url}/gfg/question-count`, {
+					headers: {
+						Authorization: `Bearer ${getJWTtoken()}`,
+					},
+				}
+			)
+		).data;
+
+		return data;
+	}
+
 }
 async function profileStatusScreen() {
     try {
         console.clear();
-        let isLoading = true;
 
         const spinner = createSpinner("Loading your profile stats").start();
         let pages = [];
         let currentPage = 0;
-
-        keypress(process.stdin);
-        process.stdin.setRawMode(true);
-        
-        process.stdin.on("keypress", function(ch, key) {
-            if(isLoading) return;
-        })
-        process.stdin.resume();
 
         if (true) { // connected("leetcode")
             let lcData = await fetchStats("leetcode");
@@ -62,6 +65,10 @@ async function profileStatusScreen() {
         if (true) { // connected("codeforces")
             let cfData = await fetchStats("codeforces");
             pages.push({ platform: "Codeforces", data: cfData });
+        }
+        if (true) {
+            let gfgData = await fetchStats("gfg");
+            pages.push({ platform: "GeeksForGeeks", data: gfgData });
         }
 
         let d = {
@@ -80,7 +87,6 @@ async function profileStatusScreen() {
         pages.push({ platform: "Overall", data: d });
 
         spinner.success();
-        isLoading = false;
         console.clear();
 
         async function renderPage(currentPage) {

@@ -6,44 +6,24 @@ import { createSpinner } from 'nanospinner';
 import { keyPress } from '../index.js';
 import homePageScreen from '../HomePage/HomePage.js';
 import { timestampToDate } from '../index.js';
-import keypress from 'keypress';
+import recentSubError from './recentSubmissionsError.js';
 async function recentSubmissionsScreen() {
     try {
-        let isLoading = true;
         console.clear();
         const NO_OF_SUBMISSIONS_PER_PAGE = 5;
         const spinner = createSpinner("Loading Recent submissions").start();
         let memo = {}; // cache
         let offset = 0;
-        let lcData = [];
 
-        // Blocking all the inputs while api fetching {
-        keypress(process.stdin);
-        process.stdin.setRawMode(true);
-        process.stdin.resume();
-
-        process.stdin.on("keypress", function(ch, key) {
-            if(isLoading) return;
-        })
-        // }
-
-        while (true) {
-            const data = (
-                await axios.post(
-                    `${url}/leetcode/recents?limit=5&offset=${offset}`,
-                    { lcData },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${getJWTtoken()}`,
-                        },
-                    }
-                )
-            ).data;
-            if (data.length == 0) break;
-
-            lcData = [...lcData, ...data];
-            offset += NO_OF_SUBMISSIONS_PER_PAGE;
-        }
+        const lcData = (
+            await axios.get(
+                `${url}/leetcode/recents?limit=5&offset=${offset}`,{
+                    headers: {
+                        Authorization: `Bearer ${getJWTtoken()}`,
+                    },
+                }
+            )
+        ).data;
 
         let cfData = (
             await axios.get(`${url}/codeforces/recents`, {
@@ -53,9 +33,6 @@ async function recentSubmissionsScreen() {
             })
         ).data;
 
-
-        // gfg work --> 
-
         let gfgData = (
             await axios.get(`${url}/gfg/recents`, {
                 headers: {
@@ -63,7 +40,6 @@ async function recentSubmissionsScreen() {
                 },
             })
         ).data;
-
 
         let total = [...lcData, ...cfData, ...gfgData];
         total.sort((a, b) => b.timestamp - a.timestamp);
@@ -84,7 +60,6 @@ async function recentSubmissionsScreen() {
         const totalPages = Math.floor(total.length / pageSize);
         async function renderPage(currentPage) {
             spinner.success();
-            isLoading = false; 
             console.clear();
             const table = new Table({
                 head: ["Problem", "Platform", "Difficulty", "Submitted On (GMT)"],
@@ -100,7 +75,7 @@ async function recentSubmissionsScreen() {
                 table.push([
                     row.title,
                     row.platform,
-                    row.difficulty,
+                    row.difficulty.toLowerCase(),
                     timestampToDate(row.timestamp),
                 ])
             );
@@ -110,10 +85,11 @@ async function recentSubmissionsScreen() {
             console.log("\n(Press 'esc' to return to the main menu...)");
         }
 
+        await renderPage(currentPage);
         keyPress((ch, key) => {
-            
+
             if (key && key.name == "escape") {
-                return homePageScreen();
+                return homePageScreen;
             } else if (key && key.name == "left") {
                 if (currentPage > 0) {
                     renderPage(--currentPage);
@@ -124,9 +100,8 @@ async function recentSubmissionsScreen() {
                 }
             }
         })
-        await renderPage(currentPage);
     } catch (err) {
-        console.log(err);
+        recentSubError("An unexpected error occurred while fetching submissions. Please try again later.");
     }
 }
 

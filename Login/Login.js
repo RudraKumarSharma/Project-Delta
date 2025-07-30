@@ -19,7 +19,7 @@ async function loginScreen() {
             password,
         };
         const response = (await axios.post(`${url}/auth/login`, body)).data;
-
+        console.log(response);
         console.log("");
         const token = JSON.stringify({
             jwt_token: response.jwt_token,
@@ -37,7 +37,17 @@ async function loginScreen() {
 
         
     } catch (err) {
-        loginScreenError(err);
+        if(err.status) {
+            if (err.status === 404) {
+                loginScreenError("User not found.");
+            } else if (err.status === 401) {
+                loginScreenError("Invalid credentials.");
+            } else if (err.status === 500) {
+                loginScreenError("Internal server error occured.");
+            }
+        } else {
+            loginScreenError("An unexpected error occurred. Please try again later.");
+        }
     }
 }
 

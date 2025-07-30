@@ -1,5 +1,7 @@
 import { input } from "@inquirer/prompts";
 import signUpErrorScreenB from "./SignupError.js";
+import { url } from "../index.js";
+import homePageScreen from "../HomePage/HomePage.js";
 import fs from 'fs';
 import axios from "axios";
 async function signUpScreen() {
@@ -51,8 +53,16 @@ async function signUpScreen() {
 
         homePageScreen();
     } catch (err) {
-        console.log(err);
-        signUpErrorScreenB(err?.err);
+        
+        if(err.status) {
+            if(err.status === 402) {
+                signUpErrorScreenB("User already exists");
+            } else if (err.status === 500) {
+                signUpErrorScreenB("Internal server error");
+            }
+        } else {
+            signUpErrorScreenB("An unexpected error occurred. Please try again later.");
+        }
     }
 }
 

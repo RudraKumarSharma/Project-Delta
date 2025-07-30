@@ -1,16 +1,15 @@
-import signUpScreen from "./Signup.js";
+import recentSubmissionsScreen from "./RecentSubmissions.js";
 import { exit } from "../index.js";
-import { url } from "../index.js";
 import { select } from "@inquirer/prompts";
-async function signUpErrorScreenB(error) {
+async function recentSubError(error) {
     console.clear();
     const answer = await select({
-        message: `An error occurred while creating your account: ${error}`,
+        message: `An error occurred while fetching submissions: ${error}`,
         choices: [
             {
                 name: "Try Again",
-                value: async () => await signUpScreen(), // we will call login function
-                description: "Select to sign up again",
+                value: async () => await recentSubmissionsScreen(), // we will call login function
+                description: "Select to try again",
             },
             {
                 name: "Exit",
@@ -22,4 +21,4 @@ async function signUpErrorScreenB(error) {
 
     await answer();
 }
-export default signUpErrorScreenB;
+export default recentSubError;
