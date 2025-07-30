@@ -4,16 +4,27 @@ import { getJWTtoken } from '../index.js';
 import Table from 'cli-table3';
 import { createSpinner } from 'nanospinner';
 import { keyPress } from '../index.js';
+import keypress from 'keypress';
 import homePageScreen from '../HomePage/HomePage.js';
 import { timestampToDate } from '../index.js';
 import recentSubError from './recentSubmissionsError.js';
 async function recentSubmissionsScreen() {
     try {
         console.clear();
+        let isLoading = true;
         const NO_OF_SUBMISSIONS_PER_PAGE = 5;
         const spinner = createSpinner("Loading Recent submissions").start();
         let memo = {}; // cache
         let offset = 0;
+
+        keypress(process.stdin);
+        process.stdin.on("keypress", keyFunction);
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+
+        if(isLoading) {
+            
+        }
 
         const lcData = (
             await axios.get(
