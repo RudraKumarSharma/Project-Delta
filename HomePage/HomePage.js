@@ -4,6 +4,7 @@ import { exit } from "../index.js";
 import recentSubmissionsScreen from "../RecentSubmissions/RecentSubmissions.js";
 import profileStatusScreen from "../Profilestatus/ProfileStatus.js"; 
 import manageAccountScreen from "../ManageAccount/ManageAccount.js";
+import logout from "../Logout/Logout.js";
 async function homePageScreen() {
     console.clear();
     const answer = await select({
@@ -24,6 +25,11 @@ async function homePageScreen() {
                 name: "Manage Account",
                 value: async () => await manageAccountScreen(),
                 description: "Select to manage your account",
+            },
+            {
+                name: "logout",
+                value: async () => await logout(),
+                description: "Select to logout",
             },
             {
                 name: "Exit",

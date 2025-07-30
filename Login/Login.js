@@ -19,7 +19,7 @@ async function loginScreen() {
             password,
         };
         const response = (await axios.post(`${url}/auth/login`, body)).data;
-        console.log(response);
+
         console.log("");
         const token = JSON.stringify({
             jwt_token: response.jwt_token,

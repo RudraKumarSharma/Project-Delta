@@ -6,14 +6,27 @@ import { createSpinner } from 'nanospinner';
 import { keyPress } from '../index.js';
 import homePageScreen from '../HomePage/HomePage.js';
 import { timestampToDate } from '../index.js';
+import keypress from 'keypress';
 async function recentSubmissionsScreen() {
     try {
+        let isLoading = true;
         console.clear();
         const NO_OF_SUBMISSIONS_PER_PAGE = 5;
         const spinner = createSpinner("Loading Recent submissions").start();
         let memo = {}; // cache
         let offset = 0;
         let lcData = [];
+
+        // Blocking all the inputs while api fetching {
+        keypress(process.stdin);
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+
+        process.stdin.on("keypress", function(ch, key) {
+            if(isLoading) return;
+        })
+        // }
+
         while (true) {
             const data = (
                 await axios.post(
@@ -71,6 +84,7 @@ async function recentSubmissionsScreen() {
         const totalPages = Math.floor(total.length / pageSize);
         async function renderPage(currentPage) {
             spinner.success();
+            isLoading = false; 
             console.clear();
             const table = new Table({
                 head: ["Problem", "Platform", "Difficulty", "Submitted On (GMT)"],
@@ -96,9 +110,8 @@ async function recentSubmissionsScreen() {
             console.log("\n(Press 'esc' to return to the main menu...)");
         }
 
-        await renderPage(currentPage);
         keyPress((ch, key) => {
-
+            
             if (key && key.name == "escape") {
                 return homePageScreen();
             } else if (key && key.name == "left") {
@@ -111,6 +124,7 @@ async function recentSubmissionsScreen() {
                 }
             }
         })
+        await renderPage(currentPage);
     } catch (err) {
         console.log(err);
     }
