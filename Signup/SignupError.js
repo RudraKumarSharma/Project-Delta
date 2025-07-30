@@ -1,5 +1,7 @@
 import signUpScreen from "./Signup.js";
 import { exit } from "../index.js";
+import { url } from "../index.js";
+import { select } from "@inquirer/prompts";
 async function signUpErrorScreenB(error) {
     // console.clear();
 
