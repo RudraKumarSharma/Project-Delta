@@ -13,24 +13,17 @@ async function recentSubmissionsScreen() {
         const spinner = createSpinner("Loading Recent submissions").start();
         let memo = {}; // cache
         let offset = 0;
-        let lcData = [];
-        while (true) {
-            const data = (
-                await axios.post(
-                    `${url}/leetcode/recents?limit=5&offset=${offset}`,
-                    { lcData },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${getJWTtoken()}`,
-                        },
-                    }
-                )
-            ).data;
-            if (data.length == 0) break;
 
-            lcData = [...lcData, ...data];
-            offset += NO_OF_SUBMISSIONS_PER_PAGE;
-        }
+        const lcData = (
+            await axios.get(
+                `${url}/leetcode/recents?limit=5&offset=${offset}`,{
+                    headers: {
+                        Authorization: `Bearer ${getJWTtoken()}`,
+                    },
+                }
+            )
+        ).data;
+
 
         let cfData = (
             await axios.get(`${url}/codeforces/recents`, {
@@ -86,7 +79,7 @@ async function recentSubmissionsScreen() {
                 table.push([
                     row.title,
                     row.platform,
-                    row.difficulty,
+                    row.difficulty.toLowerCase(),
                     timestampToDate(row.timestamp),
                 ])
             );

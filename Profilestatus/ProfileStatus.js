@@ -38,7 +38,7 @@ async function fetchStats(platform) {
     if(platform === "gfg") {
 		const data = (
 			await axios.get(
-				`${url}/gfg/pcount`, {
+				`${url}/gfg/question-count`, {
 					headers: {
 						Authorization: `Bearer ${getJWTtoken()}`,
 					},
