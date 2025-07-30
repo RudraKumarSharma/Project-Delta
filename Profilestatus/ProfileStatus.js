@@ -35,6 +35,20 @@ async function fetchStats(platform) {
 		return data;
 	}
 
+    if(platform === "gfg") {
+		const data = (
+			await axios.get(
+				`${url}/gfg/pcount`, {
+					headers: {
+						Authorization: `Bearer ${getJWTtoken()}`,
+					},
+				}
+			)
+		).data;
+
+		return data;
+	}
+
 }
 async function profileStatusScreen() {
     try {
@@ -51,6 +65,10 @@ async function profileStatusScreen() {
         if (true) { // connected("codeforces")
             let cfData = await fetchStats("codeforces");
             pages.push({ platform: "Codeforces", data: cfData });
+        }
+        if (true) {
+            let gfgData = await fetchStats("gfg");
+            pages.push({ platform: "GeeksForGeeks", data: gfgData });
         }
 
         let d = {
