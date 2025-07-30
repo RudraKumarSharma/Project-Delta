@@ -1,5 +1,7 @@
 import { input } from "@inquirer/prompts";
 import signUpErrorScreenB from "./SignupError.js";
+import { url } from "../index.js";
+import homePageScreen from "../HomePage/HomePage.js";
 import fs from 'fs';
 import axios from "axios";
 async function signUpScreen() {
