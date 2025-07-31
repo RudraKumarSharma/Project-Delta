@@ -8,13 +8,25 @@ function exit() {
     console.clear();
 }
 
-async function keyPress(keyFunction) {
-    keypress(process.stdin);
-    process.stdin.on("keypress", keyFunction);
-    process.stdin.setRawMode(true);
-    process.stdin.resume();
-}
+let keyListenerAttached = false;
 
+function keyPress(keyFunction) {
+    if (!keyListenerAttached) {
+        keypress(process.stdin);
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+        keyListenerAttached = true;
+    }
+
+    process.stdin.removeAllListeners("keypress");
+    process.stdin.on("keypress", keyFunction);
+}
+function cleanupKeyListener() {
+    process.stdin.setRawMode(false);
+    process.stdin.pause();
+    process.stdin.removeAllListeners("keypress");
+    keyListenerAttached = false;
+}
 function timestampToDate(timestamp) {
     const date = new Date(timestamp);
 
@@ -54,4 +66,4 @@ async function checkLoginSession() {
 }
 
 checkLoginSession();
-export {exit,keyPress,timestampToDate,getJWTtoken,url}
+export { exit, keyPress, timestampToDate, getJWTtoken, url,cleanupKeyListener }
