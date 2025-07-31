@@ -1,7 +1,7 @@
 import homePageScreen from "../HomePage/HomePage.js";
 import axios from "axios";
 import fs from 'fs';
-import { keyPress } from "../index.js";
+import { cleanupKeyListener, keyPress } from "../index.js";
 import { url } from "../index.js";
 import { input } from "@inquirer/prompts";
 import loginScreenError from "./LoginError.js";
@@ -31,6 +31,7 @@ async function loginScreen() {
         console.log("\n(Press 'enter' to continue.)");
         keyPress(function (ch, key) {
             if (key && key.name == "return") {
+                cleanupKeyListener();
                 homePageScreen();
             }
         });

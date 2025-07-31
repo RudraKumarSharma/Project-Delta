@@ -1,5 +1,5 @@
 import { createSpinner } from "nanospinner";
-import { keyPress } from "../index.js";
+import { cleanupKeyListener, keyPress } from "../index.js";
 import axios from 'axios';
 import homePageScreen from "../HomePage/HomePage.js";
 import Table from "cli-table3";
@@ -133,6 +133,7 @@ async function profileStatusScreen() {
 
         keyPress(function (ch, key) {
             if (key && key.name == "escape") {
+                cleanupKeyListener();
                 homePageScreen();
             } else if (key && key.name == "left") {
                 if (currentPage > 0) {
