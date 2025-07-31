@@ -14,18 +14,26 @@ async function signUpScreen() {
       message: "leetcodeId: ",
       required: false,
     });
-    console.log();
-    const leetcodeSessionToken = await input({
+
+    let leetcodeSessionToken = ''; 
+    
+    if(leetcodeId != '') {
+      leetcodeSessionToken = await input({
       message: "leetcode-session-token: ",
       required: false,
-    });
-
+      });
+    }
+    
     const codeforcesId = await input({
       message: "codeforces-ID: ",
       required: false,
     });
     const gfgId = await input({ message: "GFG-ID: ", required: false });
-    const gfgToken = await input({ message: "GFG Token : ", required: false });
+    let gfgToken = '';
+
+    if(gfgId != '') {
+      gfgToken = await input({ message: "GFG Token : ", required: false });
+    }
 
     console.log("");
     console.log("Creating your account...");
