@@ -4,15 +4,24 @@ import { getJWTtoken } from '../index.js';
 import Table from 'cli-table3';
 import { createSpinner } from 'nanospinner';
 import { keyPress } from '../index.js';
+import keypress from 'keypress';
 import homePageScreen from '../HomePage/HomePage.js';
 import { timestampToDate } from '../index.js';
+import recentSubError from './recentSubmissionsError.js';
 async function recentSubmissionsScreen() {
     try {
         console.clear();
+        let isLoading = true;
         const NO_OF_SUBMISSIONS_PER_PAGE = 5;
         const spinner = createSpinner("Loading Recent submissions").start();
         let memo = {}; // cache
         let offset = 0;
+
+        keyPress(function (ch, key) {
+            if(isLoading) {
+                return;
+            }
+        });
 
         const lcData = (
             await axios.get(
@@ -24,7 +33,6 @@ async function recentSubmissionsScreen() {
             )
         ).data;
 
-
         let cfData = (
             await axios.get(`${url}/codeforces/recents`, {
                 headers: {
@@ -33,9 +41,6 @@ async function recentSubmissionsScreen() {
             })
         ).data;
 
-
-        // gfg work --> 
-
         let gfgData = (
             await axios.get(`${url}/gfg/recents`, {
                 headers: {
@@ -43,7 +48,9 @@ async function recentSubmissionsScreen() {
                 },
             })
         ).data;
-
+        
+        isLoading = false;
+        spinner.success();
 
         let total = [...lcData, ...cfData, ...gfgData];
         total.sort((a, b) => b.timestamp - a.timestamp);
@@ -63,7 +70,6 @@ async function recentSubmissionsScreen() {
 
         const totalPages = Math.floor(total.length / pageSize);
         async function renderPage(currentPage) {
-            spinner.success();
             console.clear();
             const table = new Table({
                 head: ["Problem", "Platform", "Difficulty", "Submitted On (GMT)"],
@@ -105,7 +111,7 @@ async function recentSubmissionsScreen() {
             }
         })
     } catch (err) {
-        console.log(err);
+        recentSubError("An unexpected error occurred while fetching submissions. Please try again later.");
     }
 }
 

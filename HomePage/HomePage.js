@@ -1,6 +1,7 @@
 import { select } from "@inquirer/prompts";
 import fs from 'fs';
 import { exit } from "../index.js";
+import logout from "../Logout/Logout.js";
 import recentSubmissionsScreen from "../RecentSubmissions/RecentSubmissions.js";
 import profileStatusScreen from "../Profilestatus/ProfileStatus.js"; 
 import manageAccountScreen from "../ManageAccount/ManageAccount.js";
@@ -24,6 +25,11 @@ async function homePageScreen() {
                 name: "Manage Account",
                 value: async () => await manageAccountScreen(),
                 description: "Select to manage your account",
+            },
+            {
+                name: "Logout",
+                value: async () => await logout(),
+                description: "Select to Logout",
             },
             {
                 name: "Exit",
