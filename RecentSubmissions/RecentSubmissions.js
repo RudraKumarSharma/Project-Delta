@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { url } from '../index.js';
+import { cleanupKeyListener, url } from '../index.js';
 import { getJWTtoken } from '../index.js';
 import Table from 'cli-table3';
 import { createSpinner } from 'nanospinner';
@@ -112,6 +112,7 @@ async function recentSubmissionsScreen() {
         keyPress((ch, key) => {
 
             if (key && key.name == "escape") {
+                cleanupKeyListener();
                 return homePageScreen();
             } else if (key && key.name == "left") {
                 if (currentPage > 0) {

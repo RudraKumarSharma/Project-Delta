@@ -1,6 +1,6 @@
 import { input } from "@inquirer/prompts";
 import axios from 'axios';
-import { keyPress } from "../index.js";
+import { cleanupKeyListener, keyPress } from "../index.js";
 import homePageScreen from "../HomePage/HomePage.js";
 import { getJWTtoken } from "../index.js";
 import { url } from "../index.js";
@@ -45,6 +45,7 @@ async function manageAccountScreen() {
         console.log("Please press 'enter' to continue...");
         keyPress(async (ch, key) => {
             if (key && key.name === 'return') {
+                cleanupKeyListener();
                 await homePageScreen();
             }
         });
