@@ -53,10 +53,17 @@ async function fetchStats(platform) {
 async function profileStatusScreen() {
     try {
         console.clear();
-
+        let isLoading = true;
         const spinner = createSpinner("Loading your profile stats").start();
         let pages = [];
         let currentPage = 0;
+
+        keyPress(function (ch, key) {
+            if(isLoading) {
+                return;
+            }
+        });
+        
 
         if (true) { // connected("leetcode")
             let lcData = await fetchStats("leetcode");
@@ -87,6 +94,7 @@ async function profileStatusScreen() {
         pages.push({ platform: "Overall", data: d });
 
         spinner.success();
+        isLoading = false;
         console.clear();
 
         async function renderPage(currentPage) {
