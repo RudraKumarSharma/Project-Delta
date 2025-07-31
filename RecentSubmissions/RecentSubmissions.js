@@ -17,14 +17,11 @@ async function recentSubmissionsScreen() {
         let memo = {}; // cache
         let offset = 0;
 
-        keypress(process.stdin);
-        process.stdin.on("keypress", keyFunction);
-        process.stdin.setRawMode(true);
-        process.stdin.resume();
-
-        if(isLoading) {
-            
-        }
+        keyPress(function (ch, key) {
+            if(isLoading) {
+                return;
+            }
+        });
 
         const lcData = (
             await axios.get(
@@ -51,6 +48,9 @@ async function recentSubmissionsScreen() {
                 },
             })
         ).data;
+        
+        isLoading = false;
+        spinner.success();
 
         let total = [...lcData, ...cfData, ...gfgData];
         total.sort((a, b) => b.timestamp - a.timestamp);
@@ -70,7 +70,6 @@ async function recentSubmissionsScreen() {
 
         const totalPages = Math.floor(total.length / pageSize);
         async function renderPage(currentPage) {
-            spinner.success();
             console.clear();
             const table = new Table({
                 head: ["Problem", "Platform", "Difficulty", "Submitted On (GMT)"],
@@ -100,7 +99,7 @@ async function recentSubmissionsScreen() {
         keyPress((ch, key) => {
 
             if (key && key.name == "escape") {
-                return homePageScreen;
+                return homePageScreen();
             } else if (key && key.name == "left") {
                 if (currentPage > 0) {
                     renderPage(--currentPage);
