@@ -8,6 +8,22 @@ import keypress from 'keypress';
 import homePageScreen from '../HomePage/HomePage.js';
 import { timestampToDate } from '../index.js';
 import recentSubError from './recentSubmissionsError.js';
+
+async function fetchSubmissions(platform) {
+    try {
+        let data = (await axios.get(`${url}/${platform}/recents`, {
+            headers: {
+                Authorization: `Bearer ${getJWTtoken()}`,
+                },
+            })
+        ).data;
+
+        return data;
+    } catch (err) {
+        // console.error(`Error fetching submissions for ${platform}:`, err);
+    }
+}
+
 async function recentSubmissionsScreen() {
     try {
         console.clear();
@@ -15,44 +31,41 @@ async function recentSubmissionsScreen() {
         const NO_OF_SUBMISSIONS_PER_PAGE = 5;
         const spinner = createSpinner("Loading Recent submissions").start();
         let memo = {}; // cache
-        let offset = 0;
-
+        // let offset = 0;
+        let total = [];
+        
         keyPress(function (ch, key) {
             if(isLoading) {
                 return;
             }
         });
 
-        const lcData = (
-            await axios.get(
-                `${url}/leetcode/recents?limit=5&offset=${offset}`,{
-                    headers: {
-                        Authorization: `Bearer ${getJWTtoken()}`,
-                    },
-                }
-            )
-        ).data;
+        try {
+            let lcData = await fetchSubmissions("leetcode");
+            total = [...total, ...lcData];
+        } catch (err) {
+            // console.error("Error fetching Leetcode data:", err);
+        }
 
-        let cfData = (
-            await axios.get(`${url}/codeforces/recents`, {
-                headers: {
-                    Authorization: `Bearer ${getJWTtoken()}`,
-                },
-            })
-        ).data;
+        try {
+            let cfData = await fetchSubmissions("codeforces");
+            total = [...total, ...cfData];
+        } catch (err) {
+            // console.error("Error fetching Codeforces data:", err);
+        }
 
-        let gfgData = (
-            await axios.get(`${url}/gfg/recents`, {
-                headers: {
-                    Authorization: `Bearer ${getJWTtoken()}`
-                },
-            })
-        ).data;
-        
+        try {
+            let gfgData = await fetchSubmissions("gfg");
+            total = [...total, ...gfgData];
+        } catch (err) {
+            // console.error("Error fetching GeeksForGeeks data:", err);
+        }
+
+        console.log(total);
+
         isLoading = false;
         spinner.success();
 
-        let total = [...lcData, ...cfData, ...gfgData];
         total.sort((a, b) => b.timestamp - a.timestamp);
         let temp = [];
         total.forEach((element, i) => {

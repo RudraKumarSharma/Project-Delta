@@ -63,19 +63,26 @@ async function profileStatusScreen() {
                 return;
             }
         });
-        
 
-        if (true) { // connected("leetcode")
+        try {
             let lcData = await fetchStats("leetcode");
             pages.push({ platform: "Leetcode", data: lcData });
+        } catch (err) {
+            console.error("Error fetching Leetcode data:", err);
         }
-        if (true) { // connected("codeforces")
+
+        try {
             let cfData = await fetchStats("codeforces");
             pages.push({ platform: "Codeforces", data: cfData });
+        } catch (err) {
+            console.error("Error fetching Codeforces data:", err);
         }
-        if (true) {
+
+        try {
             let gfgData = await fetchStats("gfg");
             pages.push({ platform: "GeeksForGeeks", data: gfgData });
+        } catch (err) {
+            console.error("Error fetching GeeksForGeeks data:", err);
         }
 
         let d = {

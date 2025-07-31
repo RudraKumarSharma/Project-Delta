@@ -4,6 +4,7 @@ import fs from "fs";
 import keypress from "keypress";
 import parentScreen from "./ParentPage/ParentPage.js";
 import homePageScreen from "./HomePage/HomePage.js";
+import { get } from "http";
 function exit() {
     console.clear();
 }
@@ -33,8 +34,6 @@ function getJWTtoken() {
 }
 const url = "http://localhost:3000";
 
-
-
 async function checkLoginSession() {
     if (fs.readFileSync("config.json").length != 0) {
         let token = JSON.parse(fs.readFileSync("config.json"));
@@ -54,4 +53,4 @@ async function checkLoginSession() {
 }
 
 checkLoginSession();
-export {exit,keyPress,timestampToDate,getJWTtoken,url}
+export {exit,keyPress,timestampToDate,getJWTtoken,url }
