@@ -53,8 +53,16 @@ async function signUpScreen() {
 
         homePageScreen();
     } catch (err) {
-        console.log(err);
-        signUpErrorScreenB(err?.err);
+        let message = "";
+        if (err.status) {
+            if (err.status == 402) {
+                message = "User Already exists"
+            }
+            else{   
+                message = "A server error occurred"
+            }
+        }
+        signUpErrorScreenB("User Already Exists");
     }
 }
 

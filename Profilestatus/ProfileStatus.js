@@ -7,47 +7,47 @@ import { url } from "../index.js";
 import { getJWTtoken } from "../index.js";
 async function fetchStats(platform) {
 
-	if(platform === "codeforces") {
-		const data = (
-			await axios.get(
-				`${url}/codeforces/question-count`, {
-					headers: {
-						Authorization: `Bearer ${getJWTtoken()}`,
-					},
-				}
-			)
-		).data;
+    if (platform === "codeforces") {
+        const data = (
+            await axios.get(
+                `${url}/codeforces/question-count`, {
+                headers: {
+                    Authorization: `Bearer ${getJWTtoken()}`,
+                },
+            }
+            )
+        ).data;
 
-		return data;
-	}
+        return data;
+    }
 
-	if(platform === "leetcode") {
-		const data = (
-			await axios.get(
-				`${url}/leetcode/question-count`, {
-					headers: {
-						Authorization: `Bearer ${getJWTtoken()}`,
-					},
-				}
-			)
-		).data;
+    if (platform === "leetcode") {
+        const data = (
+            await axios.get(
+                `${url}/leetcode/question-count`, {
+                headers: {
+                    Authorization: `Bearer ${getJWTtoken()}`,
+                },
+            }
+            )
+        ).data;
 
-		return data;
-	}
+        return data;
+    }
 
-    if(platform === "gfg") {
-		const data = (
-			await axios.get(
-				`${url}/gfg/question-count`, {
-					headers: {
-						Authorization: `Bearer ${getJWTtoken()}`,
-					},
-				}
-			)
-		).data;
+    if (platform === "gfg") {
+        const data = (
+            await axios.get(
+                `${url}/gfg/question-count`, {
+                headers: {
+                    Authorization: `Bearer ${getJWTtoken()}`,
+                },
+            }
+            )
+        ).data;
 
-		return data;
-	}
+        return data;
+    }
 
 }
 async function profileStatusScreen() {
@@ -122,7 +122,7 @@ async function profileStatusScreen() {
         }
         renderPage(currentPage)
 
-        
+
         keyPress(function (ch, key) {
             if (key && key.name == "escape") {
                 homePageScreen();
@@ -136,8 +136,8 @@ async function profileStatusScreen() {
                 }
             }
         });
-        
-        
+
+
     } catch (err) {
         console.error("An error occurred in profileStatusScreen:", err);
     }
