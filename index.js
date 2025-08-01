@@ -44,7 +44,7 @@ function getJWTtoken() {
   const { jwt_token } = JSON.parse(fs.readFileSync("config.json"));
   return jwt_token;
 }
-const url = "http://localhost:3000";
+const url = "https://poc-42ya.onrender.com";
 
 async function checkLoginSession() {
   if (fs.readFileSync("config.json").length != 0) {

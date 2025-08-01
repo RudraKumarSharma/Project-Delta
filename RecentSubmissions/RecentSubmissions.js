@@ -53,7 +53,6 @@ async function recentSubmissionsScreen() {
       total = [...total, ...gfgData];
     } catch (err) {}
 
-    console.log(total);
 
     isLoading = false;
     spinner.success();
