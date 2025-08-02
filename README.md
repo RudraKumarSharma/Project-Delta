@@ -29,16 +29,6 @@ Project-Delta simplifies tracking your progress across multiple coding platforms
     npm install
     ```
 
-## Backend Setup
-
-**Important:** The backend for this project is not yet hosted. To use the CLI, you must run the backend server locally.
-
-1.  **Clone the backend repository:**
-    ```bash
-    git clone https://github.com/Aadi-dev-learner/POC
-    ```
-2.  Follow the setup instructions in the backend repository's `README.md` to start the local server.
-
 ## Obtaining Credentials
 
 To connect your coding platform accounts, you will need to provide specific authentication tokens.
@@ -67,7 +57,7 @@ You will need to find two values:
 -   `LEETCODE_SESSION`: Your main session token.
 
 
-Copy the values for both of these from the "Value" column in the cookie list.
+Copy the value of this from the "Value" column in the cookie list.
 
 #### GeeksforGeeks (GFG)
 
@@ -90,3 +80,4 @@ Contributions are welcome! Please feel free to submit a pull request or open an 
 ## License
 
 This project is licensed under the ISC License.
+
