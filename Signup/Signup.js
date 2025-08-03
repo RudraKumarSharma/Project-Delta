@@ -29,8 +29,8 @@ async function signUpScreen() {
       required: false,
     });
     const gfgId = await input({ message: "GFG-ID: ", required: false });
+    
     let gfgToken = '';
-
     if(gfgId != '') {
       gfgToken = await input({ message: "GFG Token : ", required: false });
     }

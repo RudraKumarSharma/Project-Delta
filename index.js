@@ -47,6 +47,7 @@ function getJWTtoken() {
 const url = "https://poc-42ya.onrender.com";
 
 async function checkLoginSession() {
+  
   if (fs.readFileSync("config.json").length != 0) {
     let token = JSON.parse(fs.readFileSync("config.json"));
 
@@ -56,14 +57,19 @@ async function checkLoginSession() {
       },
     })
       .then(async () => {
+        // console.log("hello2");
         await homePageScreen();
       })
-      .catch(async () => await parentScreen());
+      .catch(
+        async () => {
+          await parentScreen()
+        }
+      );
   } else {
     await parentScreen();
   }
 }
-
+// console.log("hello")
 checkLoginSession();
 export {
   exit,

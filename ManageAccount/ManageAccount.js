@@ -16,7 +16,7 @@ async function manageAccountScreen() {
     const gfgCookie = await input({ message: "Gfg Cookie: " });
     const lcBody = {
       leetcodeSessionToken:
-        leetcodeSessionToken.length != 0 ? leetcodeSessionToken : undefined,
+      leetcodeSessionToken.length != 0 ? leetcodeSessionToken : undefined,
       leetcodeId: leetcodeId.length != 0 ? leetcodeId : undefined,
     };
     const cfBody = {
