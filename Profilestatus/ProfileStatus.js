@@ -6,41 +6,15 @@ import Table from "cli-table3";
 import { url } from "../index.js";
 import { getJWTtoken } from "../index.js";
 async function fetchStats(platform) {
-  if (platform === "codeforces") {
-    const data = (
-      await axios.get(`${url}/codeforces/question-count`, {
-        headers: {
-          Authorization: `Bearer ${getJWTtoken()}`,
-        },
-      })
-    ).data;
+  const data = (
+    await axios.get(`${url}/${platform}/question-count`, {
+      headers: {
+        Authorization: `Bearer ${getJWTtoken()}`,
+      },
+    })
+  ).data;
 
-    return data;
-  }
-
-  if (platform === "leetcode") {
-    const data = (
-      await axios.get(`${url}/leetcode/question-count`, {
-        headers: {
-          Authorization: `Bearer ${getJWTtoken()}`,
-        },
-      })
-    ).data;
-
-    return data;
-  }
-
-  if (platform === "gfg") {
-    const data = (
-      await axios.get(`${url}/gfg/question-count`, {
-        headers: {
-          Authorization: `Bearer ${getJWTtoken()}`,
-        },
-      })
-    ).data;
-
-    return data;
-  }
+  return data;
 }
 async function profileStatusScreen() {
   try {
@@ -64,13 +38,14 @@ async function profileStatusScreen() {
     try {
       let cfData = await fetchStats("codeforces");
       pages.push({ platform: "Codeforces", data: cfData });
+      // console.log(cfData);
     } catch (err) {}
 
     try {
       let gfgData = await fetchStats("gfg");
       pages.push({ platform: "GeeksForGeeks", data: gfgData });
     } catch (err) {}
-
+    
     let d = {
       easy: 0,
       medium: 0,
@@ -88,7 +63,6 @@ async function profileStatusScreen() {
 
     spinner.success();
     isLoading = false;
-    console.clear();
 
     async function renderPage(currentPage) {
       console.clear();
