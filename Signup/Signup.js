@@ -29,10 +29,10 @@ async function signUpScreen() {
       required: false,
     });
     const gfgId = await input({ message: "GFG-ID: ", required: false });
-    let gfgToken = '';
+    let gfgToken = 'gfguserName=';
 
     if(gfgId != '') {
-      gfgToken = await input({ message: "GFG Token : ", required: false });
+      gfgToken += await input({ message: "GFG Token : ", required: false });
     }
 
     console.log("");
