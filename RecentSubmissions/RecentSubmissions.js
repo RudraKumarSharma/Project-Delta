@@ -51,14 +51,16 @@ async function recentSubmissionsScreen() {
     try {
       let gfgData = await fetchSubmissions("gfg");
       if (gfgData == []) {
-        let update = (
-          await axios.get(`${url}/${platform}/update`, {
-            headers: {
-              Authorization: `Bearer ${getJWTtoken()}`,
-            },
-          })
-        ).data;
-        gfgData = await fetchSubmissions("gfg");
+        try{
+          let update = (
+            await axios.get(`${url}/${platform}/update`, {
+              headers: {
+                Authorization: `Bearer ${getJWTtoken()}`,
+              },
+            })
+          ).data;
+          gfgData = await fetchSubmissions("gfg");
+        } catch (err) {}
       }
       total = [...total, ...gfgData];
     } catch (err) {}
